@@ -2,12 +2,14 @@ function setup() {
   angleMode (DEGREES)
   colorMode(RGB)
   
-   createCanvas(900, 900)
+  createCanvas(900, 900)
   _green = color(154,205,50)
   _blue = color (106,90,205)
   _gray = color (220,220,220)
   //noStroke()
   noFill()
+  
+  genGeology()
   
   nodes = [] 
   for (var i=0; i<20; i++){
@@ -54,14 +56,119 @@ function setup() {
 	  }
   }
   
-    translate(width/2,height/2)
+
+  
+  
+  //drawCreature() 
+
+}//end setup 
+
+function draw() {
+  
+} //end draw 
+
+function genGeology(){
+	strokeWeight(5) 
+	stroke(0) 
+	translate(height/2, width/2)
+	
+    rnd = 1
+	samples= 5
+    offset = 2/samples
+    increment = PI * (3 - sqrt(5));
+	points = [] 
+
+    for (var i=0; i< samples;i++){
+        y = ((i * offset) - 1) + (offset / 2);
+        r = sqrt(1 - pow(y,2))
+
+        phi = ((i + rnd) % samples) * increment
+
+        x = cos(phi/PI*180) * r
+        z = sin(phi/PI*180) * r
+		
+		lat = asin(z)
+		lon = atan2(y, x)
+		
+		rho = 90 - lat 
+		theta = lon
+		
+		u = rho*sin(theta)
+		v = rho*cos(theta)
+		points.push({
+			x: x, 
+			y: y, 
+			z: z, 
+			lon: lon,
+			lat: lat, 
+			val: randomGaussian(0, 1) 
+		})
+		//console.log (u,v) 
+		//point(u,v)
+	}
+	
+	noStroke();
+	for (var u=-180; u<180; u+=1){
+		for (var v=-90; v<90; v+=1){
+			var val = 0	
+				for (var w=0; w<points.length; w++){
+					var x0 = cos(v) * cos (u)
+					var y0 = cos(v) * sin(u)
+					var z0 = sin(v) 
+					
+					var x = points[w].x 
+					var y = points[w].y
+					var z = points[w].z 
+					var r = points[w].val
+					
+					val += r / sqrt( pow(x-x0,2) + pow(y-y0,2) + pow(z-z0,2))   
+				} 
+			//console.log(val)
+			//val = map(val,5,25,0,1)
+			var rho = 90 - v 
+			var theta = u 
+			var i = rho * sin(theta) 
+			var j = rho * cos(theta)
+			
+			if (val>30) {fill(_gray)}
+				else if (val>0.2) {fill(_green)}
+				else {fill(_blue)} 
+			square(i,j,4) 
+			}
+	} 
+	
+}
+
+function node () { 
+	this.r = abs(randomGaussian(20,10))
+	this.edges =[] 
+	this.iteration = 0; 
+	this.color = color (randomGaussian(128,45),randomGaussian(128,45),randomGaussian(128,45))  
+	}
+
+function joint (node,x,y){
+	this.x = x 
+	this.y = y 
+	this.r = node.r
+	this.n = node
+} 
+
+function limb (j1, j2, d, theta){
+	this.j1 = j1 
+	this.j2 = j2 
+	this.d = d
+	this.theta=theta
+} 
+
+function drawCreature(){
+	    translate(width/2,height/2)
 	noStroke();
   for (var i = 0;i<joints.length; i++){ 
     fill(joints[i].n.color)
 	circle(joints[i].x, joints[i].y, joints[i].r)
   }
-  
-    for (var i = 0;i<limbs.length; i++){ 
+	
+	for (var i = 0;i<limbs.length; i++){ 
 	line(limbs[i].j1.x,limbs[i].j1.y, limbs[i].j2.x, limbs[i].j2.y)
 	
 	var x1 = limbs[i].j1.x
@@ -103,29 +210,4 @@ function setup() {
     fill(joints[i].n.color)
 	circle(joints[i].x, joints[i].y, joints[i].r)
   }
-}//end setup 
-
-function draw() {
-  
-} //end draw 
-
-function node () { 
-	this.r = abs(randomGaussian(20,10))
-	this.edges =[] 
-	this.iteration = 0; 
-	this.color = color (randomGaussian(128,45),randomGaussian(128,45),randomGaussian(128,45))  
-	}
-
-function joint (node,x,y){
-	this.x = x 
-	this.y = y 
-	this.r = node.r
-	this.n = node
-} 
-
-function limb (j1, j2, d, theta){
-	this.j1 = j1 
-	this.j2 = j2 
-	this.d = d
-	this.theta=theta
-} 
+}
