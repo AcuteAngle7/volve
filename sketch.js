@@ -2,7 +2,7 @@ function setup() {
   angleMode (DEGREES)
   colorMode(RGB)
   
-  createCanvas(1000, 500)
+  createCanvas(1200, 1000)
   _green = color(154,205,50)
   _blue = color (106,90,205)
   _gray = color (220,220,220)
@@ -73,7 +73,6 @@ function genGeology(){
 	var heights = [] 
 	
 	translate(0, height/2) 
-	strokeWeight(5)
 
 	for(var h=0; h<6;h++){	
 
@@ -107,11 +106,11 @@ function genGeology(){
 	}
 	
 	noStroke(); 
-	for (var lat = -90; lat<90; lat+=1){
-		for (var lon =0; lon<360; lon+=1){
+	for (var lat = -90; lat<90; lat+=2){
+		for (var lon =0; lon<360; lon+=2){
 			var terrain = 0 
 			
-			for (var h=1; h<5; h++){ 
+			for (var h=1; h<6; h++){ 
 				for(var i=0; i<parallels[h].length; i++){
 					if (parallels[h][i] > lat) {
 						var south = i;
@@ -149,7 +148,7 @@ function genGeology(){
 				else if (terrain > 0.0){fill(_green)}
 				else {fill(_blue)}
 				
-			rect(lon*2,lat*4,2,4)
+			rect(lon*2,lat*4,4,8)
 			
 		}
 	}  
