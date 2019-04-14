@@ -2,7 +2,7 @@ function setup() {
   angleMode (DEGREES)
   colorMode(RGB)
   
-  createCanvas(900, 900)
+  createCanvas(1000, 500)
   _green = color(154,205,50)
   _blue = color (106,90,205)
   _gray = color (220,220,220)
@@ -68,74 +68,83 @@ function draw() {
 } //end draw 
 
 function genGeology(){
-	strokeWeight(5) 
-	stroke(0) 
-	translate(height/2, width/2)
+	parallels = []
+	divisions = [] 
+	heights = [] 
 	
-    rnd = 1
-	samples= 5
-    offset = 2/samples
-    increment = PI * (3 - sqrt(5));
-	points = [] 
+	translate(0, height/2) 
+	strokeWeight(5)
 
-    for (var i=0; i< samples;i++){
-        y = ((i * offset) - 1) + (offset / 2);
-        r = sqrt(1 - pow(y,2))
-
-        phi = ((i + rnd) % samples) * increment
-
-        x = cos(phi/PI*180) * r
-        z = sin(phi/PI*180) * r
-		
-		lat = asin(z)
-		lon = atan2(y, x)
-		
-		rho = 90 - lat 
-		theta = lon
-		
-		u = rho*sin(theta)
-		v = rho*cos(theta)
-		points.push({
-			x: x, 
-			y: y, 
-			z: z, 
-			lon: lon,
-			lat: lat, 
-			val: randomGaussian(0, 1) 
-		})
-		//console.log (u,v) 
-		//point(u,v)
+	for(var i=-5; i<=50; i++){
+		parallels.push(asin(i/5)) ;
+	}
+	parallels[5] = 0 
+	
+	for(var i=0; i<parallels.length; i++){
+		var d =  5 - abs ( sin(parallels[i])*5) 
+		divisions[i] = []
+		heights[i] = [] 
+		if (abs(parallels[i]) == 90)
+			{
+			divisions[i].push(0)
+			heights[i].push(random(-1.2,1.1))
+			}
+		for(var j=0; j<d;j++){
+			divisions[i].push(j/d*360)
+			heights[i][j] = random(-1.2,1.1)
+		}
+		divisions[i].push(360)
+		heights[i].push ( heights[i][0] )
 	}
 	
-	noStroke();
-	for (var u=-180; u<180; u+=1){
-		for (var v=-90; v<90; v+=1){
-			var val = 0	
-				for (var w=0; w<points.length; w++){
-					var x0 = cos(v) * cos (u)
-					var y0 = cos(v) * sin(u)
-					var z0 = sin(v) 
-					
-					var x = points[w].x 
-					var y = points[w].y
-					var z = points[w].z 
-					var r = points[w].val
-					
-					val += r / sqrt( pow(x-x0,2) + pow(y-y0,2) + pow(z-z0,2))   
-				} 
-			//console.log(val)
-			//val = map(val,5,25,0,1)
-			var rho = 90 - v 
-			var theta = u 
-			var i = rho * sin(theta) 
-			var j = rho * cos(theta)
-			
-			if (val>30) {fill(_gray)}
-				else if (val>0.2) {fill(_green)}
-				else {fill(_blue)} 
-			square(i,j,4) 
+	noStroke(); 
+	for (var lat = -90; lat<90; lat+=1){
+		for (var lon =0; lon<360; lon+=1){
+			for(var i=0; i<parallels.length; i++){
+				if (parallels[i] > lat) {
+					var south = i;
+					var north = i-1;
+					break						
+				}
 			}
-	} 
+			for (var j=0; j<divisions[south].length;j++){
+				if (divisions[south][j] > lon) {
+					var southeast = j;
+					var southwest = j-1; 
+					break						
+				}
+			}
+			
+			for (var k=0; k<divisions[north].length;k++){
+				if (divisions[north][k] > lon) {
+					var northeast = k;
+					var northwest = k-1; 
+					break						
+				}
+			}
+	
+			dsouth = map(lon, divisions[south][southwest],divisions[south][southeast],0,1) 		
+			var southern = lerp(heights[south][southwest], heights[south][southeast],dsouth)
+			
+			dnorth = map(lon, divisions[north][northwest],divisions[north][northeast],0,1) 
+			var northern = lerp(heights[north][northwest], heights[north][northeast],dnorth)
+			
+			var dlat = map(lat,parallels[north],parallels[south],0,1)  
+			var terrain = lerp(northern, southern, dlat)
+			if (terrain > 0.8){fill(_gray)} 
+				else if (terrain > 0.0){fill(_green)}
+				else {fill(_blue)}
+				
+			var rho = 90 - lat 
+			var theta = lon 
+			var x = rho * sin(theta) 
+			var y = -1 * rho * cos(theta) 
+			
+			rect(lon*2,lat*4,2,4)
+			
+		}
+	}  
+	
 	
 }
 
