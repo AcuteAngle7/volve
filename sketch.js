@@ -71,8 +71,6 @@ function genGeology(){
 	var parallels = []
 	var divisions = [] 
 	var heights = [] 
-	
-	translate(0, height/2) 
 
 	for(var h=0; h<6;h++){	
 
@@ -105,7 +103,6 @@ function genGeology(){
 		}
 	}
 	
-	noStroke(); 
 	for (var lat = -90; lat<90; lat+=2){
 		for (var lon =0; lon<360; lon+=2){
 			var terrain = 0 
@@ -148,11 +145,43 @@ function genGeology(){
 				else if (terrain > 0.0){fill(_green)}
 				else {fill(_blue)}
 				
-			rect(lon*2,lat*4,4,8)
+			//rect(lon*2,lat*4,4,8)
 			
-		}
-	}  
+		} // end lon loop 
+	}  // end lat loop 
 	
+	strokeWeight(5) 
+	translate(width/2, height/2) 
+		points = [] 
+	
+	var N = 100; 
+	var dlon = PI *(3-sqrt(5))  
+	var dz = 2/N
+	var lon = 0
+	var z = 1 - dz/2
+	for (var k=0; k<N-1; k++) {
+		var r = sqrt(1-z*z)
+		var x = cos(lon/PI*180)*r
+		var y= sin(lon/PI*180)*r
+		points.push([50*x/(1-z), 50*y/ (1-z)])  
+		point(50*x/(1-z), 50*y/ (1-z))
+		z = z - dz
+		lon += dlon
+	}
+	
+	strokeWeight(1)
+	noFill(); 
+	delaunay = Delaunator.from(points)
+	var triangles = delaunay.triangles
+	for (let i = 0; i < triangles.length; i += 3) {
+		beginShape()
+    
+        vertex(points[triangles[i]][0],points[triangles[i]][1])
+        vertex(points[triangles[i+1]][0],points[triangles[i+1]][1])
+        vertex(points[triangles[i+2]][0],points[triangles[i+2]][1])
+       
+		endShape(CLOSE);
+	}
 	
 }
 
