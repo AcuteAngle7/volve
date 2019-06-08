@@ -113,7 +113,7 @@ function constructPart(c0,c1){
 	points.push(intersect(tan2,tan4))
 	points.push(intersect(tan2,tan3))
 	
-	points = chaikin(chaikin(chaikin(points,0.15),0.25),0.25)
+	points = chaikin(chaikin(chaikin(points,0.15),0.15),0.15)
 
 	//noFill();
 	fill(0)
