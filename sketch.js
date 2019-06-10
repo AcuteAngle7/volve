@@ -2,16 +2,14 @@ function setup() {
 	angleMode (DEGREES)
 	colorMode(RGB)
 	createCanvas(1000, 500)
-	
-	//frameRate(20) 
+	frameRate(5)
+	noLoop(); 
 	
 	genome = ""
-	letters = "CCCCC+-<>CC+-<>CC+-<><><><>Aa|||()()()RrGgBbRrGgBbRGb".split("") 
-	for (let i=0;i<50;i++){
+	letters = ".....FFFFFFFFFFFFF+-+-+-+-+-+-UU|||[][][]{}RrGgBbRrGgBbRGb".split("") 
+	for (let i=0;i<500;i++){
 		genome += random(letters)
 	}
-	
-	//noLoop();
 }//end setup 
 
 function draw() {  
@@ -30,8 +28,6 @@ function draw() {
 		break; 
 	}
 
-	clear() 
-	translate(0, height/2)
 	//background(0)
 	let turtle = [{
 			x:0, 
@@ -40,40 +36,41 @@ function draw() {
 			th:0,
 			red:100, 
 			green:100,
-			blue: 100,
-			circle: null
+			blue: 100
 	}] 
 	
-	circles = [] 
+	polygons = []
+	_polygon = {points:[], color: color(100,100,100)} 
+	polygons.push(_polygon)
+	stack = [_polygon] 
+	points = []
 	
-	noStroke(); 
 	for(let i=0;i<genome.length;i++){
 		let check = genome.charAt(i); 
 		switch (check){
-			case "C": 
-				turtle[-1].x += 1.5* turtle[-1].r * cos(turtle[-1].th);
-				turtle[-1].y += 1.5* turtle[-1].r * sin(turtle[-1].th);
-				var _circle={
-					x: turtle[-1].x,
-					y: turtle[-1].y,
-					r: turtle[-1].r,
-					red: turtle[-1].red,
-					green: turtle[-1].green,
-					blue: turtle[-1].blue,
-					parent: turtle[-1].circle
-				}
-				circles.push(_circle);
-				turtle[-1].circle = _circle 
-				
+			case ".": 
+				stack[-1].points.push({x: turtle[-1].x, y: turtle[-1].y}); 
+				points.push({x: turtle[-1].x, y: turtle[-1].y})
 			break; 
-			case "+": turtle[-1].r += 5; break; 
-			case "-": turtle[-1].r -= 5; break; 
-			case "<": turtle[-1].th -= 7; break; 
-			case ">": turtle[-1].th += 7; break; 
-			case "A": turtle[-1].th -= 23; break; 
-			case "a": turtle[-1].th += 23; break; 
-			case "(": turtle.push(JSON.parse(JSON.stringify(turtle[-1]))); break;
-			case ")": if (turtle.length >1) {turtle.pop()}; break;
+			case "+": turtle[-1].th += 10; break; 
+			case "-": turtle[-1].th -= 10; break; 
+			case "U": turtle[-1].th += 180; break; 
+			case "F": 
+				turtle[-1].x += cos(turtle[-1].th)*19; 
+				turtle[-1].y += sin(turtle[-1].th)*10;
+			break; 		
+			case "[": turtle.push(JSON.parse(JSON.stringify(turtle[-1]))); break;
+			case "]": if (turtle.length >1) {turtle.pop()}; break;
+			case "{": 
+				var _polygon = {points:[], color: color(turtle[-1].red, turtle[-1].green, turtle[-1].blue)};
+				polygons.push(_polygon);
+				stack.push(_polygon)
+			break;
+			case "}": if (stack.length >1) 
+				{_polygon = stack.pop()
+				_polygon.color = color(turtle[-1].red, turtle[-1].green, turtle[-1].blue)
+				}; 
+			break;
 			case "R": if(turtle[-1].red<200) turtle[-1].red +=10; break;
 			case "r": if(turtle[-1].red>10) turtle[-1].red -=10; break; 
 			case "G": if(turtle[-1].green<200) turtle[-1].green +=10; break;
@@ -82,20 +79,32 @@ function draw() {
 			case "b": if(turtle[-1].blue>10) turtle[-1].blue -=10; break; 			
 			
 		} //end switch 
-	} // end for each genome 
-	for(i=1;i<circles.length;i++){
-		for (t=0; t<1; t+= 0.2){
-			parentColor = color(circles[i].parent.red,circles[i].parent.green, circles[i].parent.blue); 
-			childColor = color(circles[i].red,circles[i].green, circles[i].blue); 
-			var _color = lerpColor(parentColor,childColor, t)   		
-			fill(_color);
-			var _x = lerp( circles[i].parent.x,circles[i].x, t)
-			var _y = lerp( circles[i].parent.y,circles[i].y, t)
-			var _r = lerp( circles[i].parent.r,circles[i].r, t)
-			circle(_x, _y, _r); 
+	} // end for each genome
+	
+	clear()
+	translate(width/2, height/2)
+	stroke(0) 
+	for (var i=0; i<polygons.length; i++){
+		if (polygons[i].points.length >= 3){
+			fill(polygons[i].color)
+			beginShape(); 
+			for (var j=0; j<polygons[i].points.length; j++){
+				vertex(polygons[i].points[j].x,polygons[i].points[j].y) 
+			}
+			endShape(); 
 		}
-	}
-
+	} 	
+	
+	noFill(); 
+	strokeWeight(2)
+	stroke(200)
+	beginShape();
+	for (var i=0; i<points.length; i++){
+		vertex(points[i].x,points[i].y) 
+	} 	
+	endShape()
+	
+	console.log(genome)
 } //end draw 
 
 Object.defineProperty(Array.prototype, '-1', {
