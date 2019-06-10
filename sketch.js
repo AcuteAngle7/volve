@@ -6,8 +6,8 @@ function setup() {
 	noLoop(); 
 	
 	genome = ""
-	letters = ".....FFFFFFFFFFFFF+-+-+-+-+-+-UU|||[][][]{}RrGgBbRrGgBbRGb".split("") 
-	for (let i=0;i<500;i++){
+	letters = ".....FFFFFFFFFFFFF+-+-+-+-+-+-UU|||[][][]RrGgBbRrGgBbRGb".split("") 
+	for (let i=0;i<100;i++){
 		genome += random(letters)
 	}
 }//end setup 
@@ -52,12 +52,12 @@ function draw() {
 				stack[-1].points.push({x: turtle[-1].x, y: turtle[-1].y}); 
 				points.push({x: turtle[-1].x, y: turtle[-1].y})
 			break; 
-			case "+": turtle[-1].th += 10; break; 
-			case "-": turtle[-1].th -= 10; break; 
+			case "+": turtle[-1].th += 15; break; 
+			case "-": turtle[-1].th -= 15; break; 
 			case "U": turtle[-1].th += 180; break; 
 			case "F": 
-				turtle[-1].x += cos(turtle[-1].th)*19; 
-				turtle[-1].y += sin(turtle[-1].th)*10;
+				turtle[-1].x += cos(turtle[-1].th)*50; 
+				turtle[-1].y += sin(turtle[-1].th)*50;
 			break; 		
 			case "[": turtle.push(JSON.parse(JSON.stringify(turtle[-1]))); break;
 			case "]": if (turtle.length >1) {turtle.pop()}; break;
@@ -83,26 +83,31 @@ function draw() {
 	
 	clear()
 	translate(width/2, height/2)
-	stroke(0) 
-	for (var i=0; i<polygons.length; i++){
-		if (polygons[i].points.length >= 3){
-			fill(polygons[i].color)
-			beginShape(); 
-			for (var j=0; j<polygons[i].points.length; j++){
-				vertex(polygons[i].points[j].x,polygons[i].points[j].y) 
-			}
-			endShape(); 
-		}
-	} 	
+	stroke(0)
+	strokeWeight(3)
+	noFill()
 	
-	noFill(); 
-	strokeWeight(2)
-	stroke(200)
-	beginShape();
-	for (var i=0; i<points.length; i++){
-		vertex(points[i].x,points[i].y) 
-	} 	
-	endShape()
+	/*
+		beginShape(); 
+		for (var j=0; j<polygons[0].points.length; j++){
+			vertex(polygons[0].points[j].x,polygons[0].points[j].y) 
+		}
+		endShape(); 
+	*/
+	
+	
+	_chaikin = chaikin(chaikin(chaikin(polygons[0].points)))
+		
+	_red = color (200,0,0)
+	stroke(_red)
+	strokeWeight(1)
+	beginShape(); 
+	for (var j=0; j<_chaikin.length; j++){
+			vertex(_chaikin[j].x,_chaikin[j].y) 
+	}
+	endShape(); 
+	
+	
 	
 	console.log(genome)
 } //end draw 
@@ -123,3 +128,18 @@ function insertCharAt (str, index, chr) {
 function deleteCharAt (str, index) {
     return str.substring(0, index) + str.substring(index+1, str.length);
 };
+
+function chaikin (p){
+	var _p = [] 
+	_p.push(p[0]); 
+	for (var i=1;i<p.length-1; i++){
+		var x1 = lerp(p[i-1].x,p[i].x, 0.7)
+		var y1 = lerp(p[i-1].y,p[i].y, 0.7)
+		var x2 = lerp(p[i].x,p[i+1].x, 0.3)
+		var y2 = lerp(p[i].y,p[i+1].y, 0.3)
+		_p.push({x:x1, y:y1})
+		_p.push({x:x2, y:y2})
+	} 
+	_p.push(p[-1])
+	return _p
+} 
