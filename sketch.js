@@ -1,81 +1,4 @@
 function setup() {
-<<<<<<< Updated upstream
-  angleMode (DEGREES)
-  colorMode(RGB)
-  createCanvas(1200, 1000)
-  frameRate(1)
-  
-  tree = {
-	  name: "tree",
-	  type: "plant", 
-	  population: 1, 
-	  size: 1,
-	  water: 0, 
-	  sun: 0 
-  } 
-  
-   horse = {
-	  name: "horse", 
-	  type: "herbivore", 
-	  population: 1, 
-	  size: 1,
-	  speed: 1,
-	  food: 0, 
-	  water: 0
-  } 
-  
-   tiger = {
-	  name: "tiger", 
-	  type: "carnivore", 
-	  population: 1, 
-	  size: 1,
-	  speed: 1,
-	  food: 0, 
-	  water: 0
-  } 
-  
-  species = [tree, horse, tiger]
-   
-  phase = "spawn" 
-   
-  var water, sun 
-
-  
-}//end setup 
-
-function draw() {  
-
-console.log(phase)
-
-	if (phase == "spawn"){
-		water = floor(randomGaussian(10,5))
-		sun = floor(randomGaussian(10,5))
-		
-		for (var specie of species){
-			specie.population += 1
-		}
-		
-		phase = "feed" 
-	} 
-
-	else if (phase == "feed"){
-		water -=1 
-		sun -=1 
-		if (sun <= 0 || water <= 0) { phase = "cull"} 
-	} 
-	
-	else if (phase == "cull"){
-		phase = "spawn"
-	} 
-
-for (var specie of species){
-			console.log(specie.name, specie.population)
-	} 
-console.log(water, sun)
-
-
-} //end draw 
-=======
 	angleMode (DEGREES)
 	colorMode(RGB)
 	createCanvas(1000, 500)
@@ -92,7 +15,6 @@ function draw() {
 	frameRate(8) 
 	background(255) 
 	translate(width/5, height/2) 
-	strokeWeight(3)
 	noFill(); 
 	critters[-1].mutate(); 
 	critters[-1].draw(); 
@@ -173,8 +95,8 @@ class critter {
 			node.children.forEach(function(child){
 				if (child.type != null) { 
 					child.angle = angle + 180
-					child.x = node.x + cos(angle)*30*child.len
-					child.y = node.y + sin(angle)*30*child.len
+					child.x = node.x + cos(angle)*7*child.len
+					child.y = node.y + sin(angle)*7*child.len
 				} 
 				angle += stepAngle 	  
 			}) 
@@ -191,9 +113,11 @@ class critter {
 				new critter(genome); 
 			break; 
 			case "B": 
-				var index = floor(random(genome.length))
-				genome = genome.slice(0,index) + genome.slice(index+1)
-				new critter(genome); 
+				if (genome.length > 10) {
+					var index = floor(random(genome.length))
+					genome = genome.slice(0,index) + genome.slice(index+1)
+					new critter(genome); 
+				}
 			break; 
 		}
 	} 
@@ -204,14 +128,48 @@ class critter {
 				if (child.type != null) {
 					var p1x = node.x 
 					var p1y = node.y	
-					var c1x = p1x + cos(node.heading) * node.len * 20
-					var c1y = p1y + sin(node.heading) * node.len * 20
+					var c1x = p1x + cos(node.heading) * node.len * 5
+					var c1y = p1y + sin(node.heading) * node.len * 5
 					var p2x = child.x 
 					var p2y = child.y	
-					var c2x = p2x + cos(child.angle) * child.len * 20
-					var c2y = p2y + sin(child.angle) * child.len * 20 
-					bezier(p1x,p1y, c1x,c1y, c2x, c2y, p2x, p2y); 
+					var c2x = p2x + cos(child.angle) * child.len * 5
+					var c2y = p2y + sin(child.angle) * child.len * 5 
+					//bezier(p1x,p1y, c1x,c1y, c2x, c2y, p2x, p2y); 
 					//line(p1x,p1y,p2x,p2y)
+					for (var t=0; t<1; t+=0.2) {
+						var dx1 = bezierTangent(p1x, c1x, c2x, p2x, t)
+						var dy1 = bezierTangent(p1y, c1y, c2y, p2y, t)
+						var th1 = atan2(dy1, dx1); 
+						var x1 = bezierPoint(p1x, c1x, c2x, p2x, t)
+						var y1 = bezierPoint(p1y, c1y, c2y, p2y, t)
+						var r1 = lerp(node.size, child.size, t) * 7
+						var left1x = x1 + cos(th1 + 90) * r1 
+						var left1y = y1 + sin(th1 + 90) * r1 
+						var right1x = x1 + cos(th1 - 90) * r1 
+						var right1y = y1 + sin(th1 - 90) * r1 
+						
+						var t2 = t + 0.2
+						var dx2 = bezierTangent(p1x, c1x, c2x, p2x, t2)
+						var dy2 = bezierTangent(p1y, c1y, c2y, p2y, t2)
+						var th2 = atan2(dy2, dx2); 
+						var x2 = bezierPoint(p1x, c1x, c2x, p2x, t2)
+						var y2 = bezierPoint(p1y, c1y, c2y, p2y, t2)
+						var r2 = lerp(node.size, child.size, t2) * 7
+						var left2x = x2 + cos(th1 + 90) * r2 
+						var left2y = y2 + sin(th1 + 90) * r2
+						var right2x = x2 + cos(th1 - 90) * r2 
+						var right2y = y2 + sin(th1 - 90) * r2 
+						
+						fill(0)
+					
+						beginShape();
+						vertex(left1x, left1y)
+						vertex(left2x, left2y)
+						vertex(right2x, right2y)
+						vertex(right1x, right1y)
+						endShape(CLOSE);
+					
+					} 
 				}
 			})
 		}) 
@@ -230,4 +188,3 @@ Object.defineProperty(Array.prototype, '-1', {
   get() { return this[this.length - 1] }
 });
 
->>>>>>> Stashed changes
